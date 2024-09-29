@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <script src="jquery.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4/dist/css/splide.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4/dist/js/splide.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+   <script src="node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+    
+    <title>Plant-Bazaar</title>
+</head>
+
+    <div class="header">
+        <nav class="navigation">
+            <div class="logo">
+                <span class="plant">PLANT</span>
+                <p class="bazaar">-BAZAAR</p>
+                <i class="fa-solid fa-spa"></i>
+            </div>
+            <div class="nav1">
+                <a href="#">Home</a>
+                <a href="#">About</a>
+                <a href="#">Services</a>
+                <a href="#">Contact</a>
+            </div>
+            <div class="login-signup">
+                <?php if ($isLoggedIn): ?>
+                    <!-- Show Profile Picture if user is logged in -->
+                    <a href="#" class="profile-link">
+                        <img src="ProfilePictures/<?php echo $profilePic; ?>" alt="Profile" class="profile-pic">
+                    </a>
+                <?php else: ?>
+                    <!-- Show Login button if user is not logged in -->
+                    <a href="#" id="loginLink">Login</a>
+                <?php endif; ?>
+            </div>
+        </nav>
+        <div class="hamburger">
+            <i class="fas fa-bars"></i>
+        </div>
+    </div>
+
+    <div class="dropdown-menu">
+        <a href="#">Home</a>
+        <a href="#">About</a>
+        <a href="#">Services</a>
+        <a href="#">Contact</a>
+        <a href="#">Login</a>
+    </div>
+
+    <div class="dropdown-profile"></div>
+
+
+
+
+
+<style>
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+body {
+    background-color: #FDFFFC;
+}
+body::-webkit-scrollbar {
+    width: 10px;
+}
+body::-webkit-scrollbar-track {
+    background: none;
+}
+body::-webkit-scrollbar-thumb {
+    background: #352208;
+    border-radius: 10px;
+}
+.navigation {
+    margin-right: 1rem;
+    margin-left: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+a {
+    text-decoration: none;
+    color: #352208;
+    font-weight: 600;
+}
+.header {
+    padding: 10px;
+    background: rgba(248, 248, 248, 0.01);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    -webkit-backdrop-filter: blur(14.5px);
+    backdrop-filter: blur(14.5px);
+    border: 1px solid rgba(248, 248, 248, 0.77);
+}
+.logo {
+    font-size: clamp(1rem, 2vw, 3rem);
+    font-weight: 600;
+    color: #352208;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+}
+.plant {
+    background: url(plant-bazaar.jpg);
+    background-size: contain;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.fa-spa {
+    margin-left: 0.5rem;
+    background: url(plant-bazaar.jpg);
+    background-size: contain;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+/* Basic styling for navigation */
+.nav1 a,
+.login-signup a {
+    text-decoration: none; /* Remove default underline */
+    color: #352208; /* Text color */
+    font-size: 16px; /* Adjust text size */
+    margin: 0 10px; /* Spacing between links */
+    position: relative; /* Necessary for underline animation */
+    padding: 5px 0; /* Padding for a better click area */
+    transition: color 0.3s ease; /* Smooth transition for color change */
+}
+
+.nav1 a:hover,
+.login-signup a:hover {
+    color: #352208; /* Change color on hover (you can customize) */
+}
+
+/* Underline effect */
+.nav1 a::after,
+.login-signup a::after {
+    content: ''; /* Create the underline */
+    position: absolute;
+    width: 0%; /* Start with no width */
+    height: 2px; /* Thickness of the underline */
+    bottom: 0; /* Position at the bottom of the link */
+    left: 0;
+    background-color: #352208; /* Color of the underline (customizable) */
+    transition: width 0.3s ease; /* Smooth transition for width expansion */
+}
+
+.nav1 a:hover::after,
+.login-signup a:hover::after {
+    width: 100%; /* Expand the underline to full width on hover */
+}
+
+.featured {
+    margin-top: 3rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+.featured-header {
+    font-size: clamp(1rem, 2vw, 3rem);
+    font-weight: 600;
+    color: #352208;
+}
+.newly-listed {
+    margin-top: 3rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+.newly-header {
+    font-size: clamp(1rem, 2vw, 3rem);
+    font-weight: 600;
+    color: #352208;
+    margin-bottom: 2rem;
+}
+/* Hamburger hidden by default */
+.hamburger {
+    display: none;
+    cursor: pointer;
+}
+
+/* Dropdown menu (hidden by default) */
+.dropdown-menu {
+    display: none;
+    flex-direction: column;
+    background-color: #fff;
+    position: absolute;
+    top: 60px; /* Position it below the header */
+    right: 20px;
+    width: 200px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.dropdown-menu a {
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+    color: #333;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f4f4f4;
+}
+
+/* Media Query for small screens */
+@media (max-width: 768px) {
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .nav1,
+    .login-signup {
+        display: none; /* Hide normal navigation */
+    }
+
+    .hamburger {
+        display: block; /* Show hamburger icon */
+    }
+
+    .dropdown-menu {
+        display: none;
+        flex-direction: column;
+        background-color: #fff;
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        width: 200px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+    .dropdown-menu.show {
+        display: flex; /* Show dropdown on toggle */
+    }
+}
+
+.newly-listed {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+.locations {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.plant-location {
+    margin: 5px 0;
+}
+
+.location-btn {
+    padding: 10px;
+    border: none;
+    background-color: #0A0908;
+    color: #FDFFFC;
+    border: #333 solid 1px;
+    cursor: pointer;
+    border-radius: 30px;
+    font-size: clamp(1rem, 1vw, 1.5rem);
+}
+.newly-contents {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    padding: 10px;
+}
+
+.plant-item {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    font-size: clamp(1rem, 1vw, 1.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.plant-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.plant-item img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+.plant-item p {
+    margin: 5px 0;
+}
+.plant-item-buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: clamp(1rem, 1vw, 1.5rem);
+}
+.view-details {
+    padding: 10px;
+    border: none;
+    border-radius: 20px;
+    background-color: #386641;
+    color: #FDFFFC;
+    font-weight: 600;
+    cursor: pointer;
+}
+.chat-seller {
+    padding: 10px;
+    border: none;
+    border-radius: 20px;
+    background-color: #0A0908;
+    color: #FDFFFC;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.7); /* Black background with opacity */
+    backdrop-filter: blur(5px); /* Blurred background effect */
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #FDFFFC;
+    margin: 7% auto; /* 10% from the top and centered */
+    padding: 20px;
+    border: 1px solid #ddd;
+    width: 80%;
+    max-width: 400px; /* Limit the width */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    animation: modalFade 0.3s ease-in-out;
+}
+
+/* Modal fade-in animation */
+@keyframes modalFade {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Close button (X) */
+.modal-content .close {
+    color: #333;
+    float: right;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.modal-content .close:hover {
+    color: #ff0000;
+}
+
+/* Modal heading */
+.modal-content h2 {
+    text-align: center;
+    color: #352208;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+}
+
+/* Form inputs styling */
+.modal-content input {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    background-color: #f9f9f9;
+    transition: background-color 0.3s ease;
+}
+
+.modal-content input:focus {
+    background-color: #fff;
+    outline: none;
+    border: 1px solid #386641;
+}
+
+/* Submit buttons */
+.modal-content button {
+    width: 100%;
+    background-color: #386641;
+    color: white;
+    padding: 12px 20px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: background-color 0.3s ease;
+}
+
+.modal-content button:hover {
+    background-color: #2d5233;
+}
+
+/* Modal footer (optional link to switch forms) */
+.modal-content p {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 1rem;
+}
+
+.modal-content a {
+    color: #386641;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.modal-content a:hover {
+    text-decoration: underline;
+}
+
+.profile-link{
+    text-decoration: none;
+    color: #352208;
+    font-weight: 600;
+  }
+  .profile-link img{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+  }
+  .dropdown-profile {
+    display: none;
+    flex-direction: column;
+    background-color: #fff;
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    width: 200px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.dropdown-profile.show {
+    display: flex; /* Show dropdown on toggle */
+}
+.dropdown-profile a {
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+    color: #333;
+}
+.dropdown-profile p{
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+    color: #333;
+}
+
+.dropdown-profile a:hover {
+    background-color: #f4f4f4;
+}
+
+#signupModal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 1500px; /* Set the desired width */
+    max-width: 100%; /* Ensure responsiveness on smaller screens */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px); /* Background blur effect */
+    overflow: hidden; /* Prevent overflow */
+}
+
+/* Ensure body doesn't scroll when modal is open */
+body.modal-open {
+    overflow: hidden; /* Hide body overflow */
+}
+
+/* Sign-up form styling */
+#signupModal form {
+
+    display: flex;
+    flex-wrap: wrap; /* Allows wrapping of inputs */
+    gap: 20px; /* Space between inputs */
+}
+
+/* Form group for label and input alignment */
+.form-group {
+    display: flex;
+    flex-direction: column; /* Stack label and input vertically */
+    flex: 1 1 45%; /* Allow to take up to 45% of the width for two columns */
+}
+
+/* Other styles remain unchanged */
+
+.footer {
+    background-color: #f9f9f9; /* Light background color */
+    padding: 20px 0; /* Padding above and below */
+    margin-top: 30px; /* Space above the footer */
+    box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.footer-content {
+    display: flex; /* Flexbox for layout */
+    justify-content: space-around; /* Space out content */
+    max-width: 1200px; /* Limit max width */
+    margin: 0 auto; /* Center the footer content */
+    padding: 0 20px; /* Side padding */
+}
+
+.footer-links, .footer-contact, .footer-social {
+    flex: 1; /* Allow each section to grow equally */
+    margin: 0 20px; /* Spacing between sections */
+}
+
+.footer-links h3, .footer-contact h3, .footer-social h3 {
+    color: #352208; /* Header color */
+    margin-bottom: 10px; /* Space below headers */
+}
+
+.footer-links a, .footer-social a {
+    display: block; /* Stack links vertically */
+    color: #352208; /* Link color */
+    margin: 5px 0; /* Space between links */
+    text-decoration: none; /* Remove underline */
+}
+
+.footer-links a:hover, .footer-social a:hover {
+    text-decoration: underline; /* Underline on hover */
+}
+
+.footer-social {
+    text-align: center; /* Center social icons */
+}
+
+.social-icon {
+    margin: 0 5px; /* Space between icons */
+    color: #352208; /* Icon color */
+    font-size: 1.5rem; /* Icon size */
+}
+
+.footer-bottom {
+    text-align: center; /* Center text */
+    margin-top: 20px; /* Space above the bottom text */
+    color: #352208; /* Text color */
+    font-size: 0.9rem; /* Smaller font size */
+}
+</style>

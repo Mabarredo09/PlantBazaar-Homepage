@@ -14,7 +14,7 @@
         .modal {
             display: none; /* Hidden by default */
             position: fixed;
-            z-index: 1;
+            z-index: 1000; /* High z-index to ensure it appears above other elements */
             left: 0;
             top: 0;
             width: 100%;
@@ -113,12 +113,28 @@
         #message {
             margin-top: 1rem;
         }
+
+        /* Optional: Style the Add New Plant button */
+        #openModalBtn {
+            padding: 10px 20px;
+            background-color: #386641;
+            color: #FDFFFC;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #openModalBtn:hover {
+            background-color: #2d5233;
+        }
     </style>
 </head>
 <body>
 
     <!-- Button to Open Modal -->
-    <button id="openModalBtn">Add New Plant</button>
+    <button type="button" id="openModalBtn">Add New Plant</button>
 
     <!-- The Modal -->
     <div id="addProductModal" class="modal">
@@ -130,7 +146,7 @@
                 <input type="text" id="plantname" name="plantname" required>
 
                 <label for="price">Price:</label>
-                <input type="number" id="price" name="price" required>
+                <input type="number" id="price" name="price" required min="0" step="0.01">
 
                 <label for="plantcategories">Category:</label>
                 <input type="text" id="plantcategories" name="plantcategories" required>
@@ -157,7 +173,8 @@
         var span = $('.close');
         
         // When the user clicks the button, open the modal 
-        btn.on('click', function() {
+        btn.on('click', function(e) {
+            e.preventDefault(); // Prevent default button behavior
             modal.show();
         });
         
@@ -191,7 +208,7 @@
                     modal.hide(); // Hide the modal after successful submission
                 },
                 error: function(xhr, status, error) {
-                    console.error("AJAX Error: " + status + error);
+                    console.error("AJAX Error: " + status + " " + error);
                     $('#message').html('<p style="color: red;">An error occurred while adding the product.</p>');
                 }
             });

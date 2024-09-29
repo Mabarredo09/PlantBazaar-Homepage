@@ -65,7 +65,7 @@ if ($isLoggedIn) {
                 <a href="#">Home</a>
                 <a href="#">About</a>
                 <a href="#">Services</a>
-                <a href="#">Contact</a>
+                <a href="#">Contact Us</a>
             </div>
             <div class="login-signup">
                 <?php if ($isLoggedIn): ?>
@@ -206,7 +206,7 @@ if ($isLoggedIn) {
             <a href="#">Home</a>
             <a href="#">About</a>
             <a href="#">Services</a>
-            <a href="#">Contact</a>
+            <a href="">Contact Us</a>
             <a href="#">Privacy Policy</a>
         </div>
         <div class="footer-contact">
