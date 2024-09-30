@@ -1,220 +1,60 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seller Dashboard</title>
-    
-    <!-- Include jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<?php
+// Include the database connection file
+include '../conn.php';
+session_start();
 
-    <!-- Modal and Form CSS -->
-    <style>
-        /* Modal Background */
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed;
-            z-index: 1000; /* High z-index to ensure it appears above other elements */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
-        }
+$email = $_SESSION['email'];
 
-        /* Modal Content Box */
-        .modal-content {
-            background-color: #fff;
-            margin: 10% auto; /* 10% from the top and centered */
-            padding: 2rem;
-            border: 1px solid #888;
-            width: 90%;
-            max-width: 500px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            position: relative;
-        }
 
-        /* Close Button */
-        .close {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+// Check if the form has been submitted
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+  // Get the form data
+  $plantname = $_POST['plantname'];
+  $plantcolor = $_POST['plantcolor'];
+  $plantsize = $_POST['plantsize'];
+  $plantdetails = $_POST['plantdetails'];
+  $price = $_POST['price'];
+  $plantcategories = $_POST['plantcategories'];
+  $location = $_POST['location'];
+  $img1 = $_FILES['img1']['name'];
+  $img2 = $_FILES['img2']['name'];
+  $img3 = $_FILES['img3']['name'];
 
-        .close:hover,
-        .close:focus {
-            color: #000;
-            text-decoration: none;
-            cursor: pointer;
-        }
+  // Check if the image fields are empty
+  if (empty($img1)) {
+    $img1 = 'default-image.jpg';
+  }
+  if (empty($img2)) {
+    $img2 = 'default-image.jpg';
+  }
+  if (empty($img3)) {
+    $img3 = 'default-image.jpg';
+  }
 
-        /* Form Inside Modal */
-        #addProductForm {
-            margin: 0; /* Remove margin */
-        }
+  // Upload the images
+  $target_dir = "../Products/" . $email . "/";
+  $target_file1 = $target_dir . basename($_FILES["img1"]["name"]);
+  $target_file2 = $target_dir . basename($_FILES["img2"]["name"]);
+  $target_file3 = $target_dir . basename($_FILES["img3"]["name"]);
 
-        /* Form Labels */
-        #addProductForm label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #352208;
-            font-size: clamp(1rem, 1vw, 1.5rem); /* Responsive font size */
-        }
+  move_uploaded_file($_FILES["img1"]["tmp_name"], $target_file1);
+  move_uploaded_file($_FILES["img2"]["tmp_name"], $target_file2);
+  move_uploaded_file($_FILES["img3"]["tmp_name"], $target_file3);
 
-        /* Form Inputs */
-        #addProductForm input[type="text"],
-        #addProductForm input[type="number"],
-        #addProductForm input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-size: 1rem;
-            background-color: #f9f9f9;
-            transition: border-color 0.3s ease;
-        }
+  // Retrieve the seller ID from the sellers table
+  $query = "SELECT seller_id FROM sellers WHERE user_id = (SELECT id FROM users WHERE email = '$email')";
+  $result = mysqli_query($conn, $query);
+  $seller_id = mysqli_fetch_assoc($result)['seller_id'];
 
-        /* Focus effect for inputs */
-        #addProductForm input:focus {
-            background-color: #fff;
-            border-color: #5B8C5A;
-            outline: none;
-        }
+  // Insert the data into the database
+  $query = "INSERT INTO product (added_by, plantname, plantcolor, plantsize, details, price, plantcategories, location, img1, img2, img3) VALUES ('$seller_id', '$plantname', '$plantcolor', '$plantsize', '$plantdetails', '$price', '$plantcategories', '$location', '$img1', '$img2', '$img3')";
+  $result = mysqli_query($conn, $query);
 
-        /* Submit Button */
-        #addProductForm button[type="submit"] {
-            display: block;
-            width: 100%;
-            background-color: #386641;
-            color: #FDFFFC;
-            padding: 12px;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: clamp(1rem, 1.2vw, 1.2rem);
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #addProductForm button[type="submit"]:hover {
-            background-color: #2d5233;
-        }
-
-        /* Message Display */
-        #message {
-            margin-top: 1rem;
-        }
-
-        /* Optional: Style the Add New Plant button */
-        #openModalBtn {
-            padding: 10px 20px;
-            background-color: #386641;
-            color: #FDFFFC;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #openModalBtn:hover {
-            background-color: #2d5233;
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Button to Open Modal -->
-    <button type="button" id="openModalBtn">Add New Plant</button>
-
-    <!-- The Modal -->
-    <div id="addProductModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Add New Plant</h2>
-            <form id="addProductForm" enctype="multipart/form-data">
-                <label for="plantname">Plant Name:</label>
-                <input type="text" id="plantname" name="plantname" required>
-
-                <label for="price">Price:</label>
-                <input type="number" id="price" name="price" required min="0" step="0.01">
-
-                <label for="plantcategories">Category:</label>
-                <input type="text" id="plantcategories" name="plantcategories" required>
-
-                <label for="img1">Image:</label>
-                <input type="file" id="img1" name="img1" accept="image/*" required>
-
-                <button type="submit">Add Product</button>
-            </form>
-            <div id="message"></div>
-        </div>
-    </div>
-
-    <!-- jQuery and JavaScript to Open/Close Modal and Handle AJAX Form Submission -->
-    <script>
-    $(document).ready(function() {
-        // Get the modal
-        var modal = $('#addProductModal');
-        
-        // Get the button that opens the modal
-        var btn = $('#openModalBtn');
-        
-        // Get the <span> element that closes the modal
-        var span = $('.close');
-        
-        // When the user clicks the button, open the modal 
-        btn.on('click', function(e) {
-            e.preventDefault(); // Prevent default button behavior
-            modal.show();
-        });
-        
-        // When the user clicks on <span> (x), close the modal
-        span.on('click', function() {
-            modal.hide();
-        });
-
-        // When the user clicks anywhere outside of the modal, close it
-        $(window).on('click', function(event) {
-            if ($(event.target).is(modal)) {
-                modal.hide();
-            }
-        });
-
-        // Submit form via AJAX
-        $('#addProductForm').on('submit', function(e) {
-            e.preventDefault(); // Prevent the default form submission
-
-            var formData = new FormData(this); // Create FormData object from the form
-
-            $.ajax({
-                url: 'add_product_process.php', // URL to the PHP script that will handle the form submission
-                type: 'POST',
-                data: formData,
-                contentType: false, // Tell jQuery not to set contentType
-                processData: false, // Tell jQuery not to process the data
-                success: function(response) {
-                    $('#message').html(response); // Display the response message
-                    $('#addProductForm')[0].reset(); // Reset the form
-                    modal.hide(); // Hide the modal after successful submission
-                },
-                error: function(xhr, status, error) {
-                    console.error("AJAX Error: " + status + " " + error);
-                    $('#message').html('<p style="color: red;">An error occurred while adding the product.</p>');
-                }
-            });
-        });
-    });
-    </script>
-
-</body>
-</html>
+  // Output JSON data
+  if (!$result) {
+    echo json_encode(array('error' => 'Error: Unable to add product.'));
+  } else {
+    echo json_encode(array('success' => 'Product added successfully.'));
+  }
+}
+?>

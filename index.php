@@ -4,7 +4,6 @@ session_start();
 
 // Check if a user is logged in
 $isLoggedIn = isset($_SESSION['email']) && !empty($_SESSION['email']);
-
 $profilePic = ''; // Placeholder for the profile picture
 $isSeller = false; // Flag to check if the user is a seller
 
@@ -49,7 +48,8 @@ if ($isLoggedIn) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4/dist/css/splide.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4/dist/js/splide.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-   <script src="node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+    <script src="node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
     
     <title>Plant-Bazaar</title>
 </head>
@@ -62,8 +62,8 @@ if ($isLoggedIn) {
                 <i class="fa-solid fa-spa"></i>
             </div>
             <div class="nav1">
-                <a href="#">Home</a>
-                <a href="#">About</a>
+                <a href="#" id="home">Home</a>
+                <a href="#" id="about">About</a>
                 <a href="#">Services</a>
                 <a href="#">Contact Us</a>
             </div>
@@ -85,8 +85,8 @@ if ($isLoggedIn) {
     </div>
 
     <div class="dropdown-menu">
-        <a href="#">Home</a>
-        <a href="#">About</a>
+        <a href="#" id="home1">Home</a>
+        <a href="#" id="about1">About</a>
         <a href="#">Services</a>
         <a href="#">Contact</a>
         <a href="#">Login</a>
@@ -99,7 +99,7 @@ if ($isLoggedIn) {
         echo'<p>Hello, ' . $firstname . ' ' . $lastname . '</p>';
     }?>
     <?php if ($isSeller): ?>
-        <a href="Seller/seller_dashboard.php">Seller Dashboard</a> <!-- Change the link as needed for the seller's dashboard -->
+        <a href="Seller/seller_dashboard">Seller Dashboard</a> <!-- Change the link as needed for the seller's dashboard -->
     <?php else: ?>
         <a href="#">Be A Seller</a> <!-- Link to becoming a seller -->
     <?php endif; ?>
@@ -107,14 +107,16 @@ if ($isLoggedIn) {
     <a href="#" id="logoutLink">Logout</a>
 </div>
 
-    <div class="featured">
+   
+
+    <div class="featured" id="featured">
         <p class="featured-header">
             Top Seller
         </p>
         <div class="featured-contents" id="featured-contents"></div>
     </div>
 
-    <div class="newly-listed">
+    <div class="newly-listed" id="newlyListed">
         <p class="newly-header">
             Newly Listed Plants
         </p>
@@ -133,11 +135,17 @@ if ($isLoggedIn) {
         <h2>Login</h2>
         <form method="POST" action="" id="loginForm">
             <input type="email" id="loginEmail" placeholder="Email" required>
+            <div class="error-label" style="display: none;"></div>
             <input type="password" id="loginPassword" placeholder="Password" required>
+            <div class="error-label" style="display: none;"></div>
             <button type="submit">Login</button>
         </form>
         <p>Don't have an account? <a href="#" id="signupLink">Sign Up</a></p>
     </div>
+</div>
+
+<div class="about-us" id="aboutUs" style="display: none;">
+        <?php include 'aboutUs.php'; ?>
 </div>
 
 <!-- Signup Modal -->
@@ -199,6 +207,38 @@ if ($isLoggedIn) {
     </div>
 </div>
 
+<!-- Modal HTML structure -->
+<div id="viewDetailsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="viewDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewDetailsModalLabel">Plant Details</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-4">
+            <img id="plant-image" src="" alt="Plant Image" class="img-fluid">
+          </div>
+          <div class="col-md-8">
+            <h2 id="plant-name"></h2>
+            <p id="plant-description"></p>
+            <p id="plant-price"></p>
+            <p id="plant-location"></p>
+            <p id="seller-email"></p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <footer class="footer">
     <div class="footer-content">
         <div class="footer-links">
@@ -230,6 +270,7 @@ if ($isLoggedIn) {
 
 
     <script>
+
    document.addEventListener('DOMContentLoaded', function() {
     // Check if the profile link exists (only when the user is logged in)
     const profileLink = document.querySelector('.profile-link');
@@ -246,6 +287,81 @@ if ($isLoggedIn) {
     } else {
         console.log("Profile link not found - User may not be logged in");
     }
+
+$(document).ready(function() {
+
+    $(".about").click(function(event) {
+  event.preventDefault();
+  $.ajax({
+    type: "GET",
+    url: "aboutus.php",
+    success: function(data) {
+        console.log("Success: " + data);
+      $("#contentContainer").html(data);
+    },
+    error: function(xhr, status, error) {
+      console.error("Failed to load aboutus.php");
+    }
+  });
+});
+});
+
+document.getElementById("about").addEventListener("click", function() {
+    var featured = document.getElementById("featured");
+    var newlyListed = document.getElementById("newlyListed");
+    var aboutUs = document.getElementById("aboutUs");
+
+    if (aboutUs) {
+        featured.style.display = "none";
+        newlyListed.style.display = "none";
+        aboutUs.style.display = "block";
+    } else {
+        console.error("Element with id 'aboutUs' not found");
+    }
+});
+document.getElementById("about1").addEventListener("click", function() {
+    var featured = document.getElementById("featured");
+    var newlyListed = document.getElementById("newlyListed");
+    var aboutUs = document.getElementById("aboutUs");
+
+    if (aboutUs) {
+        featured.style.display = "none";
+        newlyListed.style.display = "none";
+        aboutUs.style.display = "block";
+    } else {
+        console.error("Element with id 'aboutUs' not found");
+    }
+});
+
+document.getElementById("home").addEventListener("click", function() {
+    var featured = document.getElementById("featured");
+    var newlyListed = document.getElementById("newlyListed");
+    var aboutUs = document.getElementById("aboutUs");
+
+    if (aboutUs) {
+        featured.style.display = "block";
+        newlyListed.style.display = "block";
+        aboutUs.style.display = "none";
+    } else {
+        console.error("Element with id 'aboutUs' not found");
+    }
+});
+
+document.getElementById("home1").addEventListener("click", function() {
+    var featured = document.getElementById("featured");
+    var newlyListed = document.getElementById("newlyListed");
+    var aboutUs = document.getElementById("aboutUs");
+
+    if (aboutUs) {
+        featured.style.display = "block";
+        newlyListed.style.display = "block";
+        aboutUs.style.display = "none";
+    } else {
+        console.error("Element with id 'aboutUs' not found");
+    }
+});
+
+
 
     // Hamburger menu functionality
     const hamburger = document.querySelector('.hamburger');
@@ -344,7 +460,7 @@ if ($isLoggedIn) {
                                         <p>${product.plantname}</p>
                                         <p>Price: ₱${product.price}</p>
                                         <div class="plant-item-buttons">
-                                            <button class="view-details" data-id="${product.plantid}">View Details</button>
+                                            <button class="view-details" data-id="${product.plantid}" data-email="${product.seller_email}">View Details</button>
                                             <button class="chat-seller" data-email="${product.seller_email}">Chat Seller</button>
                                         </div>
                                     </div>`;
@@ -383,7 +499,36 @@ if ($isLoggedIn) {
                         // Add event listeners to view-details and chat-seller buttons
                         $(document).on('click', '.view-details', function() {
                             let plantId = $(this).data('id');
-                            console.log(`View Details button clicked: Plant ID=${plantId}`); // Log the plant ID
+                            let sellerEmail = $(this).data('email');
+                            console.log(`View Details button clicked: Plant ID=${plantId}`); // Log the plant ID.
+                            console.log(`Chat Seller button clicked: Seller Email=${sellerEmail}`); // Log the seller email
+
+
+                                // Show the modal
+                                $('#viewDetailsModal').modal('show');
+
+                                $.ajax({
+                                url: 'Ajax/getPlantDetails.php',
+                                type: 'GET',
+                                data: { plantId: plantId },
+                                success: function(response) {
+                                    console.log(response);
+                                    if (response.error) {
+                                    console.log("Error: " + response.error);
+                                    return;
+                                    }
+                                    let plant = JSON.parse(response);
+                                    $('#plant-image').attr('src', `Products/${sellerEmail}/${plant.img1}`);
+                                    $('#plant-name').text(plant.plantname);
+                                    $('#plant-description').text(plant.description);
+                                    $('#plant-price').text(`₱${plant.price}`);  
+                                    $('#plant-location').text(plant.location);
+                                    $('#seller-email').text(plant.seller_email);
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error("Error: " + status + " - " + error);
+                                }
+                            });
                         });
 
                         $(document).on('click', '.chat-seller', function() {
@@ -405,8 +550,12 @@ if ($isLoggedIn) {
                 }
             });
             // End of AJAX Fetching of newly listed plants
+            $('#viewDetailsModal .close').on('click', function() {
+            $('#viewDetailsModal').modal('hide');
+            });
 
-    $("#loginForm").submit(function(event) {
+// Login form validation
+$("#loginForm").submit(function(event) {
     event.preventDefault();
 
     var email = $("#loginEmail").val();
@@ -416,39 +565,57 @@ if ($isLoggedIn) {
         url: "Ajax/login.php",
         type: "POST",
         data: { email: email, password: password },
+        dataType: 'json',
         success: function(response) {
-            console.log("Response: " + response);
-            if (response.trim() === "success") {
+            console.log("Response: " + JSON.stringify(response));
+            if (response.success) {
                 Swal.fire({
-                position: "center",
-                icon: "success",
-                title: "Successfully Logged in",
-                showConfirmButton: false,
-                timer: 3000
+                    position: "center",
+                    icon: "success",
+                    title: response.message,
+                    showConfirmButton: false,
+                    timer: 3000
                 });
                 // Reload page after 1.5 seconds
                 setTimeout(function() {
                     location.reload();
                 }, 3000);
             } else {
-                Swal.fire({
-                icon: "error",
-                title: "Login Failed",
-                text: "Please check your email and password.",
-                });
+                if (response.message === 'Email not found') {
+                    $("#loginEmail").addClass("error");
+                    $("#loginEmail").next(".error-label").text(response.message).show();
+                } else if (response.message === 'Invalid password') {
+                    $("#loginPassword").addClass("error");
+                    $("#loginPassword").next(".error-label").text(response.message).show();
+                } else {
+                    $("#loginEmail").addClass("error");
+                    $("#loginPassword").addClass("error");
+                    $(".error-label").text(response.message).show();
+                }
             }
         },
         error: function(xhr, status, error) {
             console.error("Error: " + status + " - " + error);
             Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "An unexpected error occurred. Please try again later."
-        });
+                icon: "error",
+                title: "Error",
+                text: "An unexpected error occurred. Please try again later.",
+            });
+            $("#loginEmail").addClass("error");
+            $("#loginPassword").addClass("error");
+            $(".error-label").text("An unexpected error occurred").show();
         }
     });
 });
 
+// Clear error label when correct email is inputted
+$("#loginEmail").on("keyup", function() {
+    var email = $(this).val();
+    if (email !== "") {
+        $(this).removeClass("error");
+        $(this).next(".error-label").hide();
+    }
+});
 $("#signupForm").submit(function(event) {
     event.preventDefault(); // Prevent default form submission
 
@@ -543,6 +710,9 @@ $(document).on('click', '#logoutLink', function(event) {
             }
         });
     });
+
+    // Add event listener to view-details buttons
+
         // Get the modals
     var loginModal = document.getElementById("loginModal");
     var signupModal = document.getElementById("signupModal");
@@ -598,15 +768,15 @@ $(document).on('click', '#logoutLink', function(event) {
         };
     }
 
-    // Close the modal if the user clicks outside of it
-    window.onclick = function(event) {
-        if (event.target == loginModal) {
-            loginModal.style.display = "none";
-        }
-        if (event.target == signupModal) {
-            signupModal.style.display = "none";
-        }
-    };
+    // // Close the modal if the user clicks outside of it
+    // window.onclick = function(event) {
+    //     if (event.target == loginModal) {
+    //         loginModal.style.display = "none";
+    //     }
+    //     if (event.target == signupModal) {
+    //         signupModal.style.display = "none";
+    //     }
+    // };
      
     });
 

@@ -43,6 +43,7 @@ if ($isLoggedIn) {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="seller_dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+    <script src="../node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
     <title>Seller Dashboard</title>
 </head>
 <body>
@@ -107,7 +108,7 @@ if ($isLoggedIn) {
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Add New Plant</h2>
-            <form id="addProductForm" enctype="multipart/form-data">
+            <form id="addProductForm"  enctype="multipart/form-data">
                 <label for="plantname">Plant Name:</label>
                 <input type="text" id="plantname" name="plantname" required>
 
@@ -126,14 +127,30 @@ if ($isLoggedIn) {
                 <label for="plantcategories">Category:</label>
                 <input type="text" id="plantcategories" name="plantcategories" required>
 
-                <label for="img1">Image:</label>
-                <input type="file" id="img1" name="img1" accept="image/*" required>
+                <label for="location">Location:</label>
+                <input type="text" id="location" name="location" required>
 
-                <label for="img1">Image:</label>
-                <input type="file" id="img1" name="img1" accept="image/*" required>
+                <div class="image-upload-container">
+                <div class="image-upload-column">
+                    <label for="img1">1st Image:</label>
+                    <input type="file" id="img1" name="img1" accept="image/*" required>
+                    <span id="img1Label"></span>
+                    <img id="img1Preview" src="" alt="Image Preview" style="width: 100px; height: 100px;">
+                </div>
+                <div class="image-upload-column">
+                    <label for="img2">2nd Image:</label>
+                    <input type="file" id="img2" name="img2" accept="image/*">
+                    <span id="img2Label"></span>
+                    <img id="img2Preview" src="" alt="Image Preview" style="width: 100px; height: 100px;">
+                </div>
+                <div class="image-upload-column">
+                    <label for="img3">3rd Image:</label>
+                    <input type="file" id="img3" name="img3" accept="image/*">
+                    <span id="img3Label"></span>
+                    <img id="img3Preview" src="" alt="Image Preview" style="width: 100px; height: 100px;">
+                </div>
+            </div>
 
-                <label for="img1">Image:</label>
-                <input type="file" id="img1" name="img1" accept="image/*" required>
 
                 <button type="submit">Add Product</button>
             </form>
@@ -245,6 +262,48 @@ document.getElementById('editImg3').addEventListener('change', function() {
     };
     reader.readAsDataURL(file);
 });
+
+document.getElementById('img1').addEventListener('change', function() {
+    const file = this.files[0];
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      document.getElementById('img1Preview').src = event.target.result;
+      document.getElementById('img1Label').innerHTML = file.name; // Display the file name next to the input field
+
+      // Rename the image
+      const newFileName = 'image1_' + Date.now() + '.' + file.name.split('.').pop();
+      document.getElementById('img1').files[0].name = newFileName;
+    };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('img2').addEventListener('change', function() {
+    const file = this.files[0];
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      document.getElementById('img2Preview').src = event.target.result;
+      document.getElementById('img2Label').innerHTML = file.name; // Display the file name next to the input field
+
+      // Rename the image
+      const newFileName = 'image2_' + Date.now() + '.' + file.name.split('.').pop();
+      document.getElementById('img2').files[0].name = newFileName;
+    };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('img3').addEventListener('change', function() {
+    const file = this.files[0];
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      document.getElementById('img3Preview').src = event.target.result;
+      document.getElementById('img3Label').innerHTML = file.name; // Display the file name next to the input field
+
+      // Rename the image
+      const newFileName = 'image3_' + Date.now() + '.' + file.name.split('.').pop();
+      document.getElementById('img3').files[0].name = newFileName;
+    };
+    reader.readAsDataURL(file);
+});
    document.addEventListener('DOMContentLoaded', function() {
     // Check if the profile link exists (only when the user is logged in)
     const profileLink = document.querySelector('.profile-link');
@@ -287,7 +346,6 @@ function fetchProducts() {
         type: 'GET',
         dataType: 'json', // Specify the expected data type as JSON
         success: function(data) {
-            console.log("Response from server:", data); // Log the response
             var productContainer = $('.card-container');
             productContainer.empty();
 
@@ -416,14 +474,18 @@ $(document).ready(function() {
 
         $.ajax({
             url: 'add_product.php', // URL to the PHP script that will handle the form submission
-            type: 'POST',
+            type: 'POST', // POST request
             data: formData,
             contentType: false, // Tell jQuery not to set contentType
             processData: false, // Tell jQuery not to process the data
             success: function(response) {
+                console.log(response);
                 $('#message').html(response); // Display the response message
                 $('#addProductForm')[0].reset(); // Reset the form
                 modal.hide(); // Hide the modal after successful submission
+                setTimeout(function() {
+                    location.reload();
+                }, 3000);
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error: " + status + " " + error);
@@ -432,6 +494,7 @@ $(document).ready(function() {
         });
     });
 });
+
 $(document).ready(function() {
         // Get the modal
         var modal = $('#addProductModal');
@@ -548,6 +611,45 @@ $('#editProductForm').on('submit', function(e) {
         }
     });
 });
+
+// Logout AJAX
+$(document).on('click', '#logoutLink', function(event) {
+        event.preventDefault();
+
+        $.ajax({
+            url: '../Ajax/logout.php', // Path to your logout.php file
+            type: 'POST',
+            success: function(response) {
+                if (response.trim() === "success") {
+                    Swal.fire({
+                        position: 'center',
+                        icon: 'success',
+                        title: 'Successfully Logged out',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                    // Reload page after 3 seconds
+                    setTimeout(function() {
+                    window.location.href = '../index.php';
+                    }, 3000);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Logout Failed',
+                        text: 'Please try again.',
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error: " + status + " - " + error);
+                Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "An unexpected error occurred. Please try again later."
+            });
+            }
+        });
+    });
 
     </script>
 </body>

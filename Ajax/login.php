@@ -8,11 +8,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = $_POST['password'];
 
     // Prepare the SQL statement
-    $sql = "SELECT * FROM users WHERE email = ? AND password = ?";
+    $sql = "SELECT * FROM users WHERE email = ?";
     $stmt = $conn->prepare($sql);
 
     // Bind parameters
-    $stmt->bind_param("ss", $email, $password); // "ss" means two strings
+    $stmt->bind_param("s", $email);
 
     // Execute the statement
     $stmt->execute();
@@ -22,13 +22,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Check if a user is found
     if ($result->num_rows > 0) {
-        $_SESSION['email'] = $email;
-        echo 'success'; // Send success message back to the client
+        $user = $result->fetch_assoc();
+        if (password_verify($password, $user['password'])) {
+            $_SESSION['email'] = $email;
+            echo json_encode(array('success' => true, 'message' => 'Successfully logged in'));
+        } else {
+            echo json_encode(array('success' => false, 'message' => 'Invalid password'));
+        }
     } else {
-        echo 'error'; // Send error message back to the client
+        echo json_encode(array('success' => false, 'message' => 'Email not found'));
     }
-
-    // Close the statement and connection
-    $stmt->close();
 }
 ?>
