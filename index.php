@@ -66,6 +66,7 @@ if ($isLoggedIn) {
                 <a href="#" id="about">About</a>
                 <a href="#">Services</a>
                 <a href="#">Contact Us</a>
+                <a href="#" id="chats">Chats</a>
             </div>
             <div class="login-signup">
                 <?php if ($isLoggedIn): ?>
@@ -271,6 +272,9 @@ if ($isLoggedIn) {
 
     <script>
 
+    document.getElementById("chats").addEventListener("click", function() {
+        window.location.href = "chats";
+    });
    document.addEventListener('DOMContentLoaded', function() {
     // Check if the profile link exists (only when the user is logged in)
     const profileLink = document.querySelector('.profile-link');
