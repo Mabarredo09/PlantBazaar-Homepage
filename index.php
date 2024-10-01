@@ -64,9 +64,10 @@ if ($isLoggedIn) {
             <div class="nav1">
                 <a href="#" id="home">Home</a>
                 <a href="#" id="about">About</a>
-                <a href="#">Services</a>
                 <a href="#">Contact Us</a>
+                <?php if ($isLoggedIn): ?>
                 <a href="#" id="chats">Chats</a>
+                <?php endif;?>
             </div>
             <div class="login-signup">
                 <?php if ($isLoggedIn): ?>
@@ -74,6 +75,7 @@ if ($isLoggedIn) {
                     <a href="#" class="profile-link">
                         <img src="ProfilePictures/<?php echo $profilePic; ?>" alt="Profile" class="profile-pic">
                     </a>
+                    
                 <?php else: ?>
                     <!-- Show Login button if user is not logged in -->
                     <a href="#" id="loginLink">Login</a>
@@ -86,16 +88,24 @@ if ($isLoggedIn) {
     </div>
 
     <div class="dropdown-menu">
+        <?php if ($isLoggedIn): ?>
+            <a href="#" class="profile-link">
+                        <img src="ProfilePictures/<?php echo $profilePic; ?>" alt="Profile" class="profile-pic">
+            </a>
+            <a><p>Hello, <?php echo $firstname . ' ' . $lastname; ?></p> </a>
+        <?php endif;?>
         <a href="#" id="home1">Home</a>
         <a href="#" id="about1">About</a>
-        <a href="#">Services</a>
         <a href="#">Contact</a>
-        <a href="#">Login</a>
+        <?php if ($isLoggedIn): ?>
+            <a href="#" id="logoutLink">Logout</a>
+        <?php else:?>
+        <a href="#" id="loginLink1">Login</a>
+        <?php endif;?>
     </div>
 
     <div class="dropdown-profile">
    <?php
-    
     if ($isLoggedIn) {
         echo'<p>Hello, ' . $firstname . ' ' . $lastname . '</p>';
     }?>
@@ -272,12 +282,13 @@ if ($isLoggedIn) {
 
     <script>
 
-    document.getElementById("chats").addEventListener("click", function() {
-        window.location.href = "chats";
-    });
+    // document.getElementById("chats").addEventListener("click", function() {
+        
+    // });
    document.addEventListener('DOMContentLoaded', function() {
     // Check if the profile link exists (only when the user is logged in)
     const profileLink = document.querySelector('.profile-link');
+    const chatsLink =document.getElementById('chats');
     
     if (profileLink) {
         profileLink.addEventListener('click', function() {
@@ -287,6 +298,14 @@ if ($isLoggedIn) {
             } else {
                 console.error("Dropdown menu not found");
             }
+        });
+    } else {
+        console.log("Profile link not found - User may not be logged in");
+    }
+
+    if (chatsLink) {
+        chatsLink.addEventListener('click', function() {
+            window.location.href = "chats";
         });
     } else {
         console.log("Profile link not found - User may not be logged in");
@@ -599,6 +618,11 @@ $("#loginForm").submit(function(event) {
             }
         },
         error: function(xhr, status, error) {
+            if (xhr.status === 200) {
+        // Login was successful, but response body is not in expected format
+        console.log("Login successful, but response body is not in expected format");
+        // You can also try to parse the response body as text or HTML
+        }else{
             console.error("Error: " + status + " - " + error);
             Swal.fire({
                 icon: "error",
@@ -609,6 +633,7 @@ $("#loginForm").submit(function(event) {
             $("#loginPassword").addClass("error");
             $(".error-label").text("An unexpected error occurred").show();
         }
+    }
     });
 });
 
@@ -752,6 +777,12 @@ $(document).on('click', '#logoutLink', function(event) {
 
     // When the user clicks the login link, open the login modal
     loginLink.onclick = function(event) {
+        event.preventDefault();
+        openLoginModal();
+        signupForm.reset();
+    };
+
+    loginLink1.onclick = function(event) {
         event.preventDefault();
         openLoginModal();
         signupForm.reset();

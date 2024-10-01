@@ -1,6 +1,24 @@
 <?php 
 session_start();
 include "conn.php"; 
+
+$email=$_SESSION['email'];
+// Check if the user is logged in
+if (!isset($_SESSION['email'])) {
+    header("Location: index");
+    exit();
+}
+
+    $query = "SELECT id, proflePicture, firstname, lastname FROM users WHERE email = '$email'";
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $user = mysqli_fetch_assoc($result);
+        $profilePic = $user['proflePicture'];  // Assuming you store the path to the profile picture
+        $userId = $user['id'];
+        $firstname = $user['firstname'];
+        $lastname = $user['lastname'];
+    }
 ?>
 
 <!DOCTYPE html>
@@ -109,7 +127,7 @@ textarea.addEventListener('input', function() {
         autoScroll(); // Ensure the chat starts at the bottom
     });
 
-    var sender_id = <?php echo $_SESSION['user_id']; ?>; // Logged-in user's ID
+    var sender_id = <?php echo $userId;?>// Logged-in user's ID
     var receiver_id; // To store the ID of the selected receiver
     var replyToMessageId = null; // Default no reply
 
@@ -119,7 +137,7 @@ textarea.addEventListener('input', function() {
     // Load users on page load
     function loadUsers() {
         $.ajax({
-            url: "ajax/fetch_users.php",
+            url: "Ajax/fetch_users.php",
             method: "GET",
             success: function(data) {
                 $(".listofusers").html(data);
@@ -143,7 +161,7 @@ textarea.addEventListener('input', function() {
     function loadMessages() {
         if (receiver_id) {
             $.ajax({
-                url: "ajax/fetch_messages.php",
+                url: "Ajax/fetch_messages.php",
                 method: "GET",
                 data: { sender_id: sender_id, receiver_id: receiver_id },
                 success: function(data) {
@@ -160,8 +178,8 @@ textarea.addEventListener('input', function() {
     // Send message function
     $('#send-button').click(function() {
     var message = $('#message-input').val().trim(); // Trim any extra whitespace
-    var formData = new FormData();
 
+    var formData = new FormData();
     // Check if message is not empty or if there's a file
     if (message.length > 0 || $('#file-input')[0].files.length > 0) {
         formData.append('message', message);
@@ -169,12 +187,13 @@ textarea.addEventListener('input', function() {
         formData.append('receiver_id', receiver_id);
         formData.append('file', $('#file-input')[0].files[0]);
         
+        
         if (replyToMessageId) {
             formData.append('reply_to', replyToMessageId); // Add reply_to if replying
         }
 
         $.ajax({
-            url: 'ajax/add_message.php',
+            url: 'Ajax/add_message.php',
             type: 'POST',
             data: formData,
             processData: false,
@@ -325,7 +344,7 @@ function loadUsers() {
 
 function loadMessages() {
     $.ajax({
-        url: 'ajax/fetch_messages.php',
+        url: 'Ajax/fetch_messages.php',
         method: 'GET',
         success: function(data) {
             $('#chat-messages').html(data);
@@ -337,9 +356,9 @@ function loadMessages() {
 }
 
 function pollForNewMessages() {
-    setInterval(function() {
+  
         $.ajax({
-            url: 'ajax/check_for_new_messages.php',
+            url: 'Ajax/check_for_new_messages.php',
             method: 'GET',
             success: function(data) {
                 if (data.hasNewMessages === true) {
@@ -351,8 +370,8 @@ function pollForNewMessages() {
                 console.error("Error checking for new messages:", error);
             }
         });
-    }, 5000); // Check every 5 seconds
 }
+setInterval(pollForNewMessages, 5000); // Check for new messages every 5 seconds
 
 $(document).ready(function() {
     loadUsers();
