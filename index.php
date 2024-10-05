@@ -63,6 +63,7 @@ if ($isLoggedIn) {
             </div>
             <div class="nav1">
                 <a href="#" id="home">Home</a>
+                <a href="#">Plants Categories</a>
                 <a href="#" id="about">About</a>
                 <a href="#">Contact Us</a>
                 <?php if ($isLoggedIn): ?>
@@ -519,46 +520,36 @@ document.getElementById("home1").addEventListener("click", function() {
                             }
                         });
 
-                        // Add event listeners to view-details and chat-seller buttons
-                        $(document).on('click', '.view-details', function() {
+                      // Add event listeners to view-details and chat-seller buttons
+                      $(document).on('click', '.view-details', function() {
                             let plantId = $(this).data('id');
                             let sellerEmail = $(this).data('email');
+
                             console.log(`View Details button clicked: Plant ID=${plantId}`); // Log the plant ID.
                             console.log(`Chat Seller button clicked: Seller Email=${sellerEmail}`); // Log the seller email
 
+                            // Create a hidden form and submit it
+                            let form = $('<form>', {
+                                action: 'viewdetails?plant=' + plantId,
+                                method: 'POST'
+                            }).append($('<input>', {
+                                type: 'hidden',
+                                name: 'plantId',
+                                value: plantId
+                            })).append($('<input>', {
+                                type: 'hidden',
+                                name: 'sellerEmail',
+                                value: sellerEmail
+                            }));
 
-                                // Show the modal
-                                $('#viewDetailsModal').modal('show');
-
-                                $.ajax({
-                                url: 'Ajax/getPlantDetails.php',
-                                type: 'GET',
-                                data: { plantId: plantId },
-                                success: function(response) {
-                                    console.log(response);
-                                    if (response.error) {
-                                    console.log("Error: " + response.error);
-                                    return;
-                                    }
-                                    let plant = JSON.parse(response);
-                                    $('#plant-image').attr('src', `Products/${sellerEmail}/${plant.img1}`);
-                                    $('#plant-name').text(plant.plantname);
-                                    $('#plant-description').text(plant.description);
-                                    $('#plant-price').text(`₱${plant.price}`);  
-                                    $('#plant-location').text(plant.location);
-                                    $('#seller-email').text(plant.seller_email);
-                                },
-                                error: function(xhr, status, error) {
-                                    console.error("Error: " + status + " - " + error);
-                                }
-                            });
+                            $('body').append(form);
+                            form.submit();
                         });
 
                         $(document).on('click', '.chat-seller', function() {
                             let sellerEmail = $(this).data('email');
                             console.log(`Chat Seller button clicked: Seller Email=${sellerEmail}`); // Log the seller email
                         });
-
                     } catch (e) {
                         console.error("Error parsing JSON", e);
                     }
@@ -570,8 +561,11 @@ document.getElementById("home1").addEventListener("click", function() {
                     title: "Error",
                     text: "An unexpected error occurred. Please try again later."
                 });
-                }
-            });
+                } 
+                             
+            });  
+
+
             // End of AJAX Fetching of newly listed plants
             $('#viewDetailsModal .close').on('click', function() {
             $('#viewDetailsModal').modal('hide');

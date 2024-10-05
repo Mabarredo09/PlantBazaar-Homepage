@@ -329,6 +329,8 @@ document.getElementById('dismiss-reply').addEventListener('click', function() {
 });
 showReplyIndicator('This is the text I’m replying to');
 showReplyIndicator('This is the text I’m replying to', 'path-to-image.jpg');
+
+
 function loadUsers() {
     $.ajax({
         url: 'ajax/fetch_users.php',
@@ -343,6 +345,7 @@ function loadUsers() {
 }
 
 function loadMessages() {
+
     $.ajax({
         url: 'Ajax/fetch_messages.php',
         method: 'GET',
@@ -356,9 +359,9 @@ function loadMessages() {
 }
 
 function pollForNewMessages() {
-  
+    setInterval(function() {
         $.ajax({
-            url: 'Ajax/check_for_new_messages.php',
+            url: 'ajax/checking_for_new_message.php',
             method: 'GET',
             success: function(data) {
                 if (data.hasNewMessages === true) {
@@ -370,13 +373,16 @@ function pollForNewMessages() {
                 console.error("Error checking for new messages:", error);
             }
         });
+    }, 5000); // Check every 5 seconds
 }
-setInterval(pollForNewMessages, 5000); // Check for new messages every 5 seconds
+
 
 $(document).ready(function() {
     loadUsers();
     loadMessages();
     pollForNewMessages();
+
+    
 });
 
 

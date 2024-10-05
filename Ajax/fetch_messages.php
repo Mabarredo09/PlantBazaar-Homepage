@@ -29,6 +29,8 @@ if ($result->num_rows > 0) {
 
         // Display the message text
         echo '<span class="message-text">' . htmlspecialchars($row['messageContent']) . '</span>';
+        echo '<br>';
+        echo '<span class="reply-message">' . htmlspecialchars($row['messageDate']) . '</span>';
 
         // Display file if it exists
         if (!empty($row['messageFiles'])) {
@@ -44,7 +46,7 @@ if ($result->num_rows > 0) {
             
             // If replying to a message that has an image
             if (!empty($row['reply_image'])) {
-                echo '<img src="ajax/' . htmlspecialchars($row['reply_image']) . '" class="reply-image" style="cursor: pointer; width: 50px; height: auto;">';
+                echo '<img src="Ajax/' . htmlspecialchars($row['reply_image']) . '" class="reply-image" style="cursor: pointer; width: 50px; height: auto;">';
             }
             echo '</div>'; // Close reply-message div
         }
