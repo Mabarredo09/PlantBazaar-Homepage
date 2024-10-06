@@ -464,7 +464,7 @@ document.getElementById("home1").addEventListener("click", function() {
                             }
                             plantsByLocation[product.location].push(product);
                         });
-            // End of AJAX Fetching of newly listed plants
+                        // End of AJAX Fetching of newly listed plants
 
                         let contentHtml = '';
                         let locationsHtml = `
@@ -544,6 +544,9 @@ document.getElementById("home1").addEventListener("click", function() {
 
                             $('body').append(form);
                             form.submit();
+
+                            // Push the current state into the history when opening the modal
+                            history.pushState(null, '', window.location.href);
                         });
 
                         $(document).on('click', '.chat-seller', function() {
@@ -565,7 +568,7 @@ document.getElementById("home1").addEventListener("click", function() {
                              
             });  
 
-
+            
             // End of AJAX Fetching of newly listed plants
             $('#viewDetailsModal .close').on('click', function() {
             $('#viewDetailsModal').modal('hide');

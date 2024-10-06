@@ -91,7 +91,7 @@ function getImagePath($sellerEmail, $img) {
 </head>
 <body>
     <!-- X button on the left to redirect to index.php -->
-    <a href="index" class="close-card">&times;</a>
+    <a href="#" class="close-card" id="close">&times;</a>
 <div class="container">
     <div class="plantContainer">
     <div class="card">
@@ -152,12 +152,14 @@ function getImagePath($sellerEmail, $img) {
         let currentImageIndex = 0;
 
         // Select the image element and buttons
+
         const plantImage = document.getElementById('plant-image');
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
         const modal = document.getElementById('imageModal');
         const zoomedImage = document.getElementById('zoomed-image');
         const closeModal = document.getElementById('closeModal');
+        const close = document.getElementById('close');
 
         // Zoom in on the image when clicked
         plantImage.addEventListener('click', function() {
@@ -169,6 +171,10 @@ function getImagePath($sellerEmail, $img) {
         closeModal.addEventListener('click', function() {
             modal.style.display = "none";
         });
+
+        close.addEventListener('click', function() {
+            window.history.back();
+        })
 
        // Event listener for the Previous button
             prevBtn.addEventListener('click', function() {

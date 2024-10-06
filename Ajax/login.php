@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $user = $result->fetch_assoc();
         if($user['password'] == $password) {
             $_SESSION['email'] = $email;
+            $_SESSION['user_id'] = $user['id'];
             echo json_encode(array('success' => true, 'message' => 'Successfully logged in'));
         } else {
             echo json_encode(array('success' => false, 'message' => 'Invalid password'));
