@@ -596,3 +596,12 @@ body.modal-open {
     color: #352208; /* Text color */
     font-size: 0.9rem; /* Smaller font size */
 }
+
+
+.container{
+    display: flex;
+    flex-direction: column;
+    margin: 1rem 1rem;
+    height: 100%;
+    width: 100%;
+}

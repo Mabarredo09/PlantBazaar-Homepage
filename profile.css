@@ -184,3 +184,23 @@ a:hover {
     color: white;
     cursor: pointer;
 }
+
+.star-rating {
+    display: inline-block;
+    direction: ltr; /* Ensure stars are displayed from left to right */
+}
+
+.star {
+    font-size: 30px; /* Size of the stars */
+    color: #ccc; /* Default color */
+    cursor: pointer;
+}
+
+.star:hover,
+.star:hover ~ .star {
+    color: gold; /* Color on hover */
+}
+
+.star.selected {
+    color: gold; /* Color for selected stars */
+}

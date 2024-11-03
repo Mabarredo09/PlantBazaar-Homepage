@@ -1,6 +1,11 @@
 <?php
+error_reporting(E_ALL); // Report all errors
+ini_set('display_errors', 1); // Display errors on the screen
 // Include the database connection
 include 'conn.php';
+
+session_start();
+$userId = $_SESSION['user_id'];
 
 // Check if sellerId is set in the URL
 if (isset($_GET['sellerId'])) {
@@ -62,6 +67,22 @@ if (isset($_GET['sellerId'])) {
             <p><strong>Email:</strong> <?php echo htmlspecialchars($sellerEmail); ?></p>
             <p><strong>Location:</strong> <?php echo htmlspecialchars($sellerAddress); ?></p>
             <p><strong>Ratings:</strong> <?php echo htmlspecialchars($sellerRatings); ?> / 5</p>
+
+            <div class="rate-seller">
+                <h3>Rate this Seller</h3>
+                <div class="star-rating">
+                    <span class="star" data-value="1">&#9733;</span>
+                    <span class="star" data-value="2">&#9733;</span>
+                    <span class="star" data-value="3">&#9733;</span>
+                    <span class="star" data-value="4">&#9733;</span>
+                    <span class="star" data-value="5">&#9733;</span>
+                </div>
+                <input type="hidden" name="sellerId" value="<?php echo htmlspecialchars($sellerId); ?>">
+                <input type="hidden" name="userId" value="<?php echo htmlspecialchars($userId); ?>">
+                <input type="hidden" name="rating" id="ratingValue" value="">
+                <button type="button" id="submitRating">Submit Rating</button>
+                <div class="rating-message"></div>
+            </div>
         </div>
         <div>
     <h3>Listings</h3>
@@ -101,8 +122,93 @@ if (isset($_GET['sellerId'])) {
 </div>
 
 <script>
+
+     // Star rating functionality
+document.querySelectorAll('.star').forEach(star => {
+    star.addEventListener('mouseover', function() {
+        // Highlight all stars up to the hovered star
+        const ratingValue = this.getAttribute('data-value');
+
+        // Add the 'selected' class to stars up to the hovered star
+        document.querySelectorAll('.star').forEach(s => {
+            s.classList.remove('selected'); // Reset all stars
+            if (parseInt(s.getAttribute('data-value')) <= ratingValue) {
+                s.classList.add('selected'); // Highlight stars up to the hovered one
+            }
+        });
+    });
+
+    star.addEventListener('mouseout', function() {
+        // Remove highlighted stars when not hovering
+        document.querySelectorAll('.star').forEach(s => {
+            s.classList.remove('selected'); // Reset all stars
+        });
+
+        // Keep the selected stars if they were clicked
+        const currentRating = document.getElementById('ratingValue').value;
+        if (currentRating) {
+            document.querySelectorAll('.star').forEach(s => {
+                if (parseInt(s.getAttribute('data-value')) <= currentRating) {
+                    s.classList.add('selected');
+                }
+            });
+        }
+    });
+
+    star.addEventListener('click', function() {
+        const ratingValue = this.getAttribute('data-value');
+        document.getElementById('ratingValue').value = ratingValue;
+
+        // Remove 'selected' class from all stars
+        document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+        
+        // Add 'selected' class to the clicked star and all stars before it
+        this.classList.add('selected');
+        let previousStar = this.previousElementSibling;
+        
+        while (previousStar) {
+            previousStar.classList.add('selected');
+            previousStar = previousStar.previousElementSibling;
+        }
+    });
+});
+
+    // Submit rating functionality
+    document.getElementById('submitRating').addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent any default action
+
+        const formData = new FormData(); // Create a new FormData object
+        formData.append('sellerId', document.querySelector('input[name="sellerId"]').value);
+        formData.append('userId', document.querySelector('input[name="userId"]').value);
+        formData.append('rating', document.getElementById('ratingValue').value);
+
+        // Perform AJAX request to submit rating
+        fetch('Ajax/rateSeller.php', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update the UI based on the response
+            if (data.success) {
+                document.querySelector('.rating-message').textContent = 'Thank you for your rating! Average rating: ' + data.average_rating + ' / 5';
+                // Reset the rating stars
+                
+            } else {
+                document.querySelector('.rating-message').textContent = 'Failed to submit rating: ' + data.message;
+                // Reset the rating stars
+                document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+                alert('Failed to submit rating: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.querySelector('.rating-message').textContent = 'An error occurred. Please try again later.';
+        });
+    });
+
      // Get elements for profile image zoom
-     const profileImg = document.querySelector('.seller-info img');
+    const profileImg = document.querySelector('.seller-info img');
     const modal = document.getElementById('zoom-modal');
     const zoomedImg = document.getElementById('zoomed-img');
     const closeModal = document.querySelector('#zoom-modal .close');
@@ -149,9 +255,8 @@ if (isset($_GET['sellerId'])) {
 
     // Add event listeners for back button
     back.addEventListener('click', function() {
-        window.history.back();
+        window.location.href = 'index';
     });
-
 
     // Function to handle viewing more details
     function viewMoreDetails(plantId, sellerEmail) {

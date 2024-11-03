@@ -1,8 +1,10 @@
 <?php
 // Include the database connection
 include 'conn.php';
+session_start();
+$isLoggedIn = isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
 
-// Check if plantId and sellerEmail are set in the URL
+
 if (isset($_POST['plantId']) && isset($_POST['sellerEmail'])) {
     $plantId = $_POST['plantId'];
     $sellerEmail = $_POST['sellerEmail'];
@@ -68,6 +70,27 @@ if (isset($_POST['plantId']) && isset($_POST['sellerEmail'])) {
     exit;
 }
 
+if ($isLoggedIn){
+
+    $userId = $_SESSION['user_id'];
+    
+    $isSeller = false; // Flag to check if the user is a seller
+    // Check if plantId and sellerEmail are set in the URL
+    $sellerQuery = "SELECT seller_id, user_id FROM sellers WHERE user_id = '$userId'";
+    $sellerResult = mysqli_query($conn, $sellerQuery);
+    
+    if ($sellerResult && mysqli_num_rows($sellerResult) > 0) {
+        $isSeller = true; // User is a seller
+    
+    }
+    if(!$sellerResult){
+        $sellerUserId = null;
+    }
+    }
+    if(!$isLoggedIn){
+        $isSeller = false;
+    }
+
 
 // Function to get the valid image path
 function getImagePath($sellerEmail, $img) {
@@ -90,8 +113,37 @@ function getImagePath($sellerEmail, $img) {
     <link rel="stylesheet" href="viewdetails.css">
 </head>
 <body>
+<?php if($isSeller=='true'):?>
     <!-- X button on the left to redirect to index.php -->
     <a href="#" class="close-card" id="close">&times;</a>
+<div class="container">
+    <div class="plantContainer">
+    <div class="card">
+        <div class="card-image-container">
+        <img id="plant-image" src="<?php echo getImagePath($sellerEmail, $img1); ?>" alt="<?php echo $plantName; ?>">
+
+        <div class="card-image-controls">
+            <button id="prev-btn"><</button>
+            <button id="next-btn">></button>
+        </div>
+        </div>
+        <div class="card-content">
+            <h1><?php echo $plantName; ?></h1>
+            <div class="plant-details">
+                <p><strong>Price:</strong> ₱<?php echo $plantPrice; ?></p>
+                <p><strong>Location:</strong> <?php echo $plantLocation; ?></p>
+                <p><strong>Color:</strong> <?php echo $plantColor; ?></p>
+                <p><strong>Size:</strong> <?php echo $plantSize; ?></p>
+                <p><strong>Categories:</strong> <?php echo $plantCategories; ?></p>
+                <p><strong>Details:</strong> <?php echo $plantDescription; ?></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php elseif($isSeller = 'false'):?>
+ <!-- X button on the left to redirect to index.php -->
+ <a href="#" class="close-card" id="close">&times;</a>
 <div class="container">
     <div class="plantContainer">
     <div class="card">
@@ -134,6 +186,7 @@ function getImagePath($sellerEmail, $img) {
 </form>
 </div>
 </div>
+<?php endif;?>
     <!-- Modal for Image Zoom -->
     <div id="imageModal" class="modal">
         <span class="close-modal" id="closeModal">&times;</span>

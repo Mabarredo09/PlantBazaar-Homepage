@@ -28,11 +28,17 @@ if ($isLoggedIn) {
     // }
 
     // Query to check if the user is a seller
-    $sellerQuery = "SELECT seller_id FROM sellers WHERE user_id = '$userId'";
+    $sellerQuery = "SELECT seller_id, user_id FROM sellers WHERE user_id = '$userId'";
     $sellerResult = mysqli_query($conn, $sellerQuery);
 
     if ($sellerResult && mysqli_num_rows($sellerResult) > 0) {
         $isSeller = true; // User is a seller
+
+        $sellerData = mysqli_fetch_assoc($sellerResult);
+        $sellerUserId = $sellerData['user_id'];
+    }
+    if(!$sellerResult){
+        $sellerUserId = null;
     }
 }
 ?>
@@ -53,7 +59,6 @@ if ($isLoggedIn) {
     
     <title>Plant-Bazaar</title>
 </head>
-
     <div class="header">
         <nav class="navigation">
             <div class="logo">
@@ -63,7 +68,7 @@ if ($isLoggedIn) {
             </div>
             <div class="nav1">
                 <a href="#" id="home">Home</a>
-                <a href="#">Plants Categories</a>
+                <a href="categories">Plants Categories</a>
                 <a href="#" id="about">About</a>
                 <a href="#">Contact Us</a>
                 <?php if ($isLoggedIn): ?>
@@ -158,6 +163,10 @@ if ($isLoggedIn) {
 
 <div class="about-us" id="aboutUs" style="display: none;">
         <?php include 'aboutUs.php'; ?>
+</div>
+
+<div class="about-us" id="category" style="display: none;">
+        <?php include 'category.php'; ?>
 </div>
 
 <!-- Signup Modal -->
@@ -328,7 +337,23 @@ $(document).ready(function() {
     }
   });
 });
+
+$(".category").click(function(event) {
+  event.preventDefault();
+  $.ajax({
+    type: "GET",
+    url: "categories.php",
+    success: function(data) {
+        console.log("Success: " + data);
+      $("#contentContainer").html(data);
+    },
+    error: function(xhr, status, error) {
+      console.error("Failed to load categories.php");
+    }
+  });
 });
+});
+
 
 document.getElementById("about").addEventListener("click", function() {
     var featured = document.getElementById("featured");
@@ -339,6 +364,7 @@ document.getElementById("about").addEventListener("click", function() {
         featured.style.display = "none";
         newlyListed.style.display = "none";
         aboutUs.style.display = "block";
+        category.style.display = "none";
     } else {
         console.error("Element with id 'aboutUs' not found");
     }
@@ -352,6 +378,7 @@ document.getElementById("about1").addEventListener("click", function() {
         featured.style.display = "none";
         newlyListed.style.display = "none";
         aboutUs.style.display = "block";
+        category.style.display = "none";
     } else {
         console.error("Element with id 'aboutUs' not found");
     }
@@ -366,6 +393,7 @@ document.getElementById("home").addEventListener("click", function() {
         featured.style.display = "block";
         newlyListed.style.display = "block";
         aboutUs.style.display = "none";
+        category.style.display = "none";
     } else {
         console.error("Element with id 'aboutUs' not found");
     }
@@ -380,11 +408,42 @@ document.getElementById("home1").addEventListener("click", function() {
         featured.style.display = "block";
         newlyListed.style.display = "block";
         aboutUs.style.display = "none";
+        category.style.display = "none";
     } else {
         console.error("Element with id 'aboutUs' not found");
     }
 });
 
+document.getElementById("category").addEventListener("click", function() {
+    var featured = document.getElementById("featured");
+    var newlyListed = document.getElementById("newlyListed");
+    var aboutUs = document.getElementById("aboutUs");
+    var category = document.getElementById("category");
+
+    if (category) {
+        featured.style.display = "none";
+        newlyListed.style.display = "none";
+        aboutUs.style.display = "none";
+        category.style.display = "block";
+    } else {
+        console.error("Element with id 'aboutUs' not found");
+    }
+});
+// document.getElementById("category1").addEventListener("click", function() {
+//     var featured = document.getElementById("featured");
+//     var newlyListed = document.getElementById("newlyListed");
+//     var aboutUs = document.getElementById("aboutUs");
+//     var category = document.getElementById("category");
+
+//     if (category) {
+//         featured.style.display = "none";
+//         newlyListed.style.display = "none";
+//         aboutUs.style.display = "none";
+//         category.style.display = "block";
+//     } else {
+//         console.error("Element with id 'aboutUs' not found");
+//     }
+// });
 
 
     // Hamburger menu functionality
@@ -402,6 +461,11 @@ document.getElementById("home1").addEventListener("click", function() {
         console.error("Hamburger menu not found");
     }
 }); 
+
+var isLoggedIn = <?php echo json_encode($isLoggedIn); ?>;
+var userId = <?php echo $isLoggedIn ? json_encode($userId) : 'null'; ?>; // Pass userId if logged in
+var sellerUserId = <?php echo $isSeller ? json_encode($sellerUserId) : 'null'; ?>;
+
     // AJAX Fetching of top Seller
      $(document).ready(function() {
             $.ajax({
@@ -443,52 +507,61 @@ document.getElementById("home1").addEventListener("click", function() {
             });
             // End of AJAX Fetching of top Seller
 
-            // AJAX Fetching of newly listed plants
-            $.ajax({ 
-                url: 'Ajax/fetch_newly_listed.php',
-                type: 'GET',
-                success: function(response) {
-                    try {
-                        let plants = response;
+ // AJAX Fetching of newly listed plants
+$.ajax({ 
+    url: 'Ajax/fetch_newly_listed.php',
+    type: 'GET',
+    success: function(response) {
+        try {
+            let plants = response;
 
-                        if (plants.error) {
-                            alert(plants.error); // Show error message if any
-                            return;
-                        }
+            if (plants.error) {
+                alert(plants.error); // Show error message if any
+                return;
+            }
 
-                        // Group plants by location
-                        let plantsByLocation = {};
-                        plants.forEach(function(product) {
-                            if (!plantsByLocation[product.location]) {
-                                plantsByLocation[product.location] = [];
-                            }
-                            plantsByLocation[product.location].push(product);
-                        });
-                        // End of AJAX Fetching of newly listed plants
+            // Group plants by location
+            let plantsByLocation = {};
+            plants.forEach(function(product) {
+                if (!plantsByLocation[product.location]) {
+                    plantsByLocation[product.location] = [];
+                }
+                plantsByLocation[product.location].push(product);
+            });
 
-                        let contentHtml = '';
-                        let locationsHtml = `
-                            <div class="plant-location">
-                                <button class="location-btn" data-location="all">Show All</button>
-                            </div>`;
+            let contentHtml = '';
+            let locationsHtml = `
+                <div class="plant-location">
+                    <button class="location-btn" data-location="all">Show All</button>
+                </div>`;
 
-                        for (let location in plantsByLocation) {
-                            // Add plant items to contentHtml
-                            plantsByLocation[location].forEach(function(product) {
-                                let imgPath = `Products/${product.seller_email}/${product.img1}`;
-                                contentHtml += `
-                                    <div class="plant-item" data-location="${product.location}">
-                                        <div class="plant-image">
-                                            <img src="${imgPath}" alt="${product.plantname}">
-                                        </div>
-                                        <p>${product.plantname}</p>
-                                        <p>Price: ₱${product.price}</p>
-                                        <div class="plant-item-buttons">
-                                            <button class="view-details" data-id="${product.plantid}" data-email="${product.seller_email}">View Details</button>
-                                            <button class="chat-seller" data-email="${product.seller_email}">Chat Seller</button>
-                                        </div>
-                                    </div>`;
-                            });
+            for (let location in plantsByLocation) {
+                // Add plant items to contentHtml
+                plantsByLocation[location].forEach(function(product) {
+                    let imgPath = `Products/${product.seller_email}/${product.img1}`;
+                    contentHtml += `
+                        <div class="plant-item" data-location="${product.location}">
+                            <div class="plant-image">
+                                <img src="${imgPath}" alt="${product.plantname}">
+                            </div>
+                            <p>${product.plantname}</p>
+                            <p>Price: ₱${product.price}</p>
+                            <div class="plant-item-buttons">
+                                <button class="view-details" data-id="${product.plantid}" data-email="${product.seller_email}">View Details</button>`;
+
+                    // Debugging: Log userId and added_by values
+                    console.log(`User ID: ${userId}, Product Added By: ${product.added_by}`);
+
+                    // Only show "Chat Seller" button if user is not the seller
+                    if (userId == 'null' || isLoggedIn && userId !== sellerUserId) {
+                        contentHtml += `
+                                <button class="chat-seller" data-email="${product.seller_email}">Chat Seller</button>`;
+                    }
+
+                    contentHtml += `
+                            </div>
+                        </div>`;
+                });
 
                             // Add location buttons to locationsHtml
                             locationsHtml += `
@@ -567,7 +640,6 @@ document.getElementById("home1").addEventListener("click", function() {
                 } 
                              
             });  
-
             
             // End of AJAX Fetching of newly listed plants
             $('#viewDetailsModal .close').on('click', function() {
